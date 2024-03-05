@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="IncreDbscantwicejdbc" />
+        <module name="IncreDbscantwicejdbcpro" />
+        <module name="IncreDbscanjdbc" />
+        <module name="IncreDbscan" />
+        <module name="IncreDbscantwicejdbcself" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel target="8" />
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_STRING" value="-encoding UTF8" />
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="IncreDbscanjdbc" options="" />
+      <module name="IncreDbscantwicejdbc" options="" />
+      <module name="IncreDbscantwicejdbcpro" options="" />
+      <module name="IncreDbscantwicejdbcself" options="" />
+    </option>
+  </component>
+</project>

@@ -71,7 +71,7 @@ public class MyJavaClass {
             pointMmsi[h + 1] = j;
 
         }
-        System.out.println(p.length+" "+p[0].latitude+" "+p[0].longitude);
+        System.out.println(p.length+" "+p[0].latitude+" "+p[0].longitude+" "+p[0].time);
 
 
         /************************************************************************************************
@@ -300,9 +300,9 @@ public class MyJavaClass {
             if (p[i].cluster==-1)
                 j++;
             if (p[i].isCorepoint==true)// 1代表是核心点，0代表是边界点
-                labelpoints.add(p[i].latitude+","+p[i].longitude+","+p[i].cluster+","+1+","+p[i].mmsid);
+                labelpoints.add(p[i].latitude+","+p[i].longitude+","+p[i].cluster+","+1+","+p[i].mmsid+","+p[i].time);
             else if (p[i].isCorepoint==false)
-                labelpoints.add(p[i].latitude+","+p[i].longitude+","+p[i].cluster+","+0+","+p[i].mmsid);
+                labelpoints.add(p[i].latitude+","+p[i].longitude+","+p[i].cluster+","+0+","+p[i].mmsid+","+p[i].time);
 
         }
         System.out.println("聚类数目："+val.size());

@@ -56,7 +56,7 @@ public class DBSCAN {
                     String sog = resultSet.getString("speed");
                     String type = resultSet.getString("status");
                     algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
-//                    System.out.println("longitude:"+longitude+"latitude:"+latitude);
+//                    System.out.println("longitude:"+longitude+"latitude:"+latitude+"time: "+timestamp);
                 }
 
                 System.out.println("查询结果共有 " + rowCount + " 行。");
@@ -73,6 +73,7 @@ public class DBSCAN {
                 y = algorithm1.routes.get(i).params.get(j).longitude;
                 String mmsi = algorithm1.routes.get(i).params.get(j).pointIndex + "";
                 Date timestamp = algorithm1.routes.get(i).params.get(j).timestamp;
+                System.out.println("时间测试:"+timestamp);
                 double sog = algorithm1.routes.get(i).params.get(j).sog;
                 double cog = algorithm1.routes.get(i).params.get(j).cog;
                 String type = algorithm1.routes.get(i).params.get(j).type;

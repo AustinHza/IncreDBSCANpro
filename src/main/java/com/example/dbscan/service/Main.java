@@ -26,9 +26,9 @@ class Main {
         saveToCSV1(resultList, outputFilePath1);
         System.out.println("第一步结果保存成功");
         // 打印处理后的列表
-//        for (SinglePoint point : resultList) {
-//            System.out.println(point);
-//        }
+/*        for (SinglePoint point : resultList) {
+            System.out.println(point);
+        }*/
 //*******************************2.调用轨迹聚类，对增量DBSCAN聚类的结果进行再次聚类************************
         MyJavaClass dbscan2 = new MyJavaClass();
         List<String> finalResultList = dbscan2.adder(resultList);
@@ -41,7 +41,8 @@ class Main {
                     Double.parseDouble(parts[1]),
                     Integer.parseInt(parts[2]),
                     Integer.parseInt(parts[3]),
-                    Long.parseLong(parts[4])
+                    Long.parseLong(parts[4]),
+                    parts[5]
             );
             points.add(point);
         }
@@ -86,7 +87,7 @@ class Main {
     private static void saveToCSV2(List<LabelPoint> points, String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             // 写入CSV文件头部
-            writer.writeNext(new String[]{ "Latitude", "Longitude","Cluster", "Core", "MMSI"});
+            writer.writeNext(new String[]{ "Latitude", "Longitude","Cluster", "Core", "MMSI","Time"});
 
             // 写入数据
             for (LabelPoint point : points) {
@@ -95,7 +96,8 @@ class Main {
                         String.valueOf(point.getLongitude()),
                         String.valueOf(point.getCluster()),
                         String.valueOf(point.getCategory()),
-                        String.valueOf(point.getMMSI())
+                        String.valueOf(point.getMMSI()),
+                        String.valueOf(point.getTime())
                 };
                 writer.writeNext(data);
             }

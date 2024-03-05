@@ -20,7 +20,8 @@ public class Point1
     public double eps_value = 0;				// Point is clustered using the eps_value epsilon value
     public int cluster = 0;
     public int flag = 0;
-    public double boundary_kdist = 0;				// Kth nearest point distance for boundary points
+    public double boundary_kdist = 0;
+    public String time;// Kth nearest point distance for boundary points
     public Point1(String arr)
     {
 
@@ -31,6 +32,7 @@ public class Point1
         this.latitude=Double.valueOf(Linearr[4].replace("[",""));
         this.longitude=Double.valueOf(Linearr[3].replace("]",""));
         this.mmsid= Integer.valueOf(Linearr[5].replace(" ",""));
+        this.time= String.valueOf(Linearr[2].replace(" ",""));
         //this.partition_id = "P"+Linearr[5];
        // System.out.println(this.latitude);
         double[] xy = coordinate1.lonlat2xy(this.latitude, this.longitude);

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class Main {
+
     public static void main(String[] args) {
 
         long startTime = System.currentTimeMillis(); // 记录开始时间
@@ -21,7 +22,7 @@ class Main {
         // 调用增量DBscanlist函数获取处理后的列表
         List<SinglePoint> resultList = dbscan.DBscanlist();
         //先保存第一步的结果
-        String outputFilePath1 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\ec_dbscan1new20180401_0407_jdbc_min10eps5000.csv";
+        String outputFilePath1 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\ec_dbscan1new20180430_08_09.csv";
 //        saveToCSV(resultList, outputFilePath);
         saveToCSV1(resultList, outputFilePath1);
         System.out.println("第一步结果保存成功");
@@ -30,33 +31,31 @@ class Main {
             System.out.println(point);
         }*/
 //*******************************2.调用轨迹聚类，对增量DBSCAN聚类的结果进行再次聚类************************
-        MyJavaClass dbscan2 = new MyJavaClass();
-        List<String> finalResultList = dbscan2.adder(resultList);
-
-        List<LabelPoint> points = new ArrayList<>();
-        for (String labelpoint : finalResultList) {
-            String[] parts = labelpoint.split(",");
-            LabelPoint point = new LabelPoint(
-                    Double.parseDouble(parts[0]),
-                    Double.parseDouble(parts[1]),
-                    Integer.parseInt(parts[2]),
-                    Integer.parseInt(parts[3]),
-                    Long.parseLong(parts[4]),
-                    parts[5]
-            );
-            points.add(point);
-        }
-        System.out.println(finalResultList);
-
-        String outputFilePath2 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\ec_dbscan2new20180401_0407_jdbc_min10eps5000.csv";
-        saveToCSV2(points, outputFilePath2);
+//        MyJavaClass dbscan2 = new MyJavaClass();
+//        List<String> finalResultList = dbscan2.adder(resultList);
+//
+//        List<LabelPoint> points = new ArrayList<>();
+//        for (String labelpoint : finalResultList) {
+//            String[] parts = labelpoint.split(",");
+//            LabelPoint point = new LabelPoint(
+//                    Double.parseDouble(parts[0]),
+//                    Double.parseDouble(parts[1]),
+//                    Integer.parseInt(parts[2]),
+//                    Integer.parseInt(parts[3]),
+//                    Long.parseLong(parts[4]),
+//                    parts[5]
+//            );
+//            points.add(point);
+//        }
+////        System.out.println(finalResultList);
+//
+//        String outputFilePath2 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\ec_dbscan2new20180430_10_11jdbc.csv";
+//        saveToCSV2(points, outputFilePath2);
 //*******************************3.主要程序运行完毕，输出计时器结果************************
         long endTime = System.currentTimeMillis(); // 记录结束时间
         long totalTime = endTime - startTime; // 计算运行时长
         long minutes = (totalTime / 1000) / 60; // 将毫秒转换为分钟
         long seconds = (totalTime / 1000) % 60; // 计算剩余的秒数
-        Algorithm1 al1 = new Algorithm1();
-        System.out.println("minpts: "+al1.minpts+" eps: "+al1.radius);
         System.out.println("程序运行时长：" + minutes + " 分 " + seconds + " 秒");
 
     }

@@ -22,10 +22,13 @@ public class Algorithm1 {
     int sum1 = 1;
     double tao = 60 * 60 * 6;
     String[] Linearr;
+
+//    public List<String[]> PointLog = new ArrayList<>();
+
 //    int minpts = 10;// neibors num（最小邻域点数）
 //    double radius = 10000;// distance（聚类半径为radius）70
-    public int minpts = 10;// neibors num（最小邻域点数）
-    public double radius =5000 ;// distance（聚类半径为radius）70
+    public int minpts;// neibors num（最小邻域点数）
+    public double radius;// distance（聚类半径为radius）70
 
     /*public Algorithm1(String timestamp)
     {
@@ -34,12 +37,12 @@ public class Algorithm1 {
             this.Timestampstart=ft.parse(timestamp);
         }catch (ParseException e){}
     }*/
+
+
     public void URE(String mmsi, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
         try {
-            //这里加入DBSCAN参数选择的代码，每进入一个点，就计算一次参数
+            System.out.println("接收到的DBCSAN参数是："+minpts+"和" + radius);
 
-            //......
-            //参数选择流程结束
             Date time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
             if (sum == 100000) {
                 sum = 0;

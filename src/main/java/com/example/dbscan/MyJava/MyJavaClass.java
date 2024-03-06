@@ -71,7 +71,7 @@ public class MyJavaClass {
             pointMmsi[h + 1] = j;
 
         }
-        System.out.println(p.length+" "+p[0].latitude+" "+p[0].longitude+" "+p[0].time);
+        //System.out.println(p.length+" "+p[0].latitude+" "+p[0].longitude+" "+p[0].time);
 
 
         /************************************************************************************************

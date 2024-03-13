@@ -52,8 +52,8 @@ public class DBSCAN {
 
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // SQL查询语句
-            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180430_08_16\"";
-//            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new20180430_08_16\"";
+//            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180401_0407_clean\"";
+            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new20180401_0407_clean\"";
             System.out.println("数据库查询成功");
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -64,19 +64,20 @@ public class DBSCAN {
                     rowCount++;  // 每次循环增加一行计数
                     String MMSI = resultSet.getString("mmsi");
                     String timestamp = resultSet.getString("time");
-                    String longitude = resultSet.getString("lon");
-                    String latitude = resultSet.getString("lat");
-//                    String longitude = resultSet.getString("mercator_x");
-//                    String latitude = resultSet.getString("mercator_y");
+//                    String longitude = resultSet.getString("lon");
+//                    String latitude = resultSet.getString("lat");
+                    String longitude = resultSet.getString("mercator_x");
+                    String latitude = resultSet.getString("mercator_y");
                     String cog = resultSet.getString("course");
                     String sog = resultSet.getString("speed");
                     String type = resultSet.getString("status");
 
 //                    handleNewData(MMSI, timestamp, latitude, longitude, sog, cog, type);//计算DBSCAN参数并调用URE
-                    handleNewDataQUAD(MMSI, timestamp, latitude, longitude, sog, cog, type);//新版的参数计算，加入了四叉树
+//                    handleNewDataQUAD(MMSI, timestamp, latitude, longitude, sog, cog, type);//新版的参数计算，加入了四叉树
 //                    handleNewDataQUADKnn(MMSI, timestamp, latitude, longitude, sog, cog, type);//用KNN计算
 
-//                    algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
+                    algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
+
 
 //                    System.out.println("longitude:"+longitude+"latitude:"+latitude+"time: "+timestamp);
                 }
@@ -186,8 +187,8 @@ public class DBSCAN {
         // 调用URE方法
 //        System.out.println("调用URE方法，新radius值为: " + radius + "新的minpts是" + algorithm1.minpts);
         algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
-        calculate++;
-        System.out.println("现在是第"+calculate+"次调用URE");
+//        calculate++;
+//        System.out.println("现在是第"+calculate+"次调用URE");
     }
 
     private void handleNewDataQUAD(String MMSI, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
@@ -272,8 +273,8 @@ public class DBSCAN {
         // 调用URE方法
 //        System.out.println("调用URE方法，新radius值为: " + radius + "新的minpts是" + algorithm1.minpts);
         algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
-        calculate++;
-        System.out.println("现在是第"+calculate+"次调用URE");
+//        calculate++;
+//        System.out.println("现在是第"+calculate+"次调用URE");
     }
 
     private void handleNewDataQUADKnn(String MMSI, String timestamp, String latitude, String longitude, String sog, String cog, String type){
@@ -363,8 +364,8 @@ public class DBSCAN {
         }
 
         algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
-        calculate++;
-        System.out.println("现在是第"+calculate+"次调用URE");
+//        calculate++;
+//        System.out.println("现在是第"+calculate+"次调用URE");
 
 
     }

@@ -21,6 +21,11 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
 
+import weka.classifiers.lazy.IBk;
+import weka.core.*;
+import weka.core.neighboursearch.LinearNNSearch;
+import java.util.ArrayList;
+
 public class DBSCAN {
     public int calculate=0;
     public List<String[]> PointLog = new ArrayList<>();
@@ -47,8 +52,8 @@ public class DBSCAN {
 
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // SQL查询语句
-            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180430_08_12\"";
-//            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new201804_clean\"";
+//            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180430_08_16\"";
+            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new20180430_08_16\"";
             System.out.println("数据库查询成功");
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -59,16 +64,17 @@ public class DBSCAN {
                     rowCount++;  // 每次循环增加一行计数
                     String MMSI = resultSet.getString("mmsi");
                     String timestamp = resultSet.getString("time");
-                    String longitude = resultSet.getString("lon");
-                    String latitude = resultSet.getString("lat");
-//                    String longitude = resultSet.getString("mercator_x");
-//                    String latitude = resultSet.getString("mercator_y");
+//                    String longitude = resultSet.getString("lon");
+//                    String latitude = resultSet.getString("lat");
+                    String longitude = resultSet.getString("mercator_x");
+                    String latitude = resultSet.getString("mercator_y");
                     String cog = resultSet.getString("course");
                     String sog = resultSet.getString("speed");
                     String type = resultSet.getString("status");
 
 //                    handleNewData(MMSI, timestamp, latitude, longitude, sog, cog, type);//计算DBSCAN参数并调用URE
-                    handleNewDataQUAD(MMSI, timestamp, latitude, longitude, sog, cog, type);//新版的参数计算，加入了R树
+                    handleNewDataQUAD(MMSI, timestamp, latitude, longitude, sog, cog, type);//新版的参数计算，加入了四叉树
+//                    handleNewDataQUADKnn(MMSI, timestamp, latitude, longitude, sog, cog, type);//用KNN计算
 
 //                    algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
 
@@ -198,53 +204,68 @@ public class DBSCAN {
 
         // 构建查询的包围盒
         Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
-        searchEnv.expandBy(0.02); // 调整值以匹配数据的实际分布
+        searchEnv.expandBy(1500); // 调整值以匹配数据的实际分布
 
         // 查询附近的点
         List<?> queryResults = quadTree.query(searchEnv);
+        System.out.println("本次包围盒包含的点数为: " + queryResults.size());
 
         List<Double> distances = new ArrayList<>();
         for (Object item : queryResults) {
             Point candidate = (Point) item;
             if (!candidate.equalsExact(newPoint)) {
-                double distance = calculateDistance(lat, lon, candidate.getY(), candidate.getX());
+                double distance = calculateEuclideanDistance(lat, lon, candidate.getY(), candidate.getX());
                 distances.add(distance);
             }
         }
 
         // 对距离进行排序
         Collections.sort(distances);
-
-        // 计算每两个连续距离之间的增长率
-        List<Double> growthRates = new ArrayList<>();
+        //***********************************************按距离增长差值选择radius********************************
+        // 计算每两个连续距离之间的差值
+        List<Double> distanceDifferences = new ArrayList<>();
         for (int i = 1; i < distances.size(); i++) {
-            double previousDistance = distances.get(i - 1);
-            double currentDistance = distances.get(i);
-            double growthRate = (currentDistance - previousDistance) / previousDistance;
-            growthRates.add(growthRate);
+            double distanceDifference = distances.get(i) - distances.get(i - 1);
+            distanceDifferences.add(distanceDifference);
         }
 
-        // 找到增长率最大的突变点
-        double maxGrowthRateChange = 0;
-        int minpts = 4;
-        double radius = 0;
-        for (int i = 1; i < growthRates.size(); i++) {
-            double growthRateChange = growthRates.get(i) - growthRates.get(i - 1);
-            if (growthRateChange > maxGrowthRateChange) {
-                maxGrowthRateChange = growthRateChange;
-                radius = distances.get(i);
-//                minpts = i + 1; // 增长率最大突变点的索引+1作为minpts
-            }
+        // 找到差值最大的点
+        double maxDistanceChange = 0;
+        if (!distanceDifferences.isEmpty()) {
+            maxDistanceChange = Collections.max(distanceDifferences);
         }
+        int indexMaxChange = distanceDifferences.indexOf(maxDistanceChange) + 1; // 加1因为差分后的数组比原数组少一个元素
+        double radius = distances.get(indexMaxChange);
+        int minpts = 8; // 这里的minpts可以保持不变或根据需要调整
+        //***********************************************按距离增长差值选择radius********************************
 
+        //***********************************************按距离增长率选择radius********************************
 
-
-
-
-
+//        // 计算每两个连续距离之间的增长率
+//        List<Double> growthRates = new ArrayList<>();
+//        for (int i = 1; i < distances.size(); i++) {
+//            double previousDistance = distances.get(i - 1);
+//            double currentDistance = distances.get(i);
+//            double growthRate = (currentDistance - previousDistance) / previousDistance;
+//            growthRates.add(growthRate);
+//        }
+//
+//        // 找到增长率最大的突变点
+//        double maxGrowthRateChange = 0;
+//        int minpts = 8;
+//        double radius = 0;
+//        for (int i = 1; i < growthRates.size(); i++) {
+//            double growthRateChange = growthRates.get(i) - growthRates.get(i - 1);
+//            if (growthRateChange > maxGrowthRateChange) {
+//                maxGrowthRateChange = growthRateChange;
+//                radius = distances.get(i);
+////                minpts = i + 1; // 增长率最大突变点的索引+1作为minpts
+//            }
+//        }
+        //***********************************************按距离增长率选择radius********************************
         // 更新DBSCAN参数
         algorithm1.radius = radius ;
-        algorithm1.minpts = 10 ;
+        algorithm1.minpts = minpts ;
 
         // 调用URE方法
 //        System.out.println("调用URE方法，新radius值为: " + radius + "新的minpts是" + algorithm1.minpts);
@@ -253,6 +274,98 @@ public class DBSCAN {
         System.out.println("现在是第"+calculate+"次调用URE");
     }
 
+    private void handleNewDataQUADKnn(String MMSI, String timestamp, String latitude, String longitude, String sog, String cog, String type){
+        double lat = Double.parseDouble(latitude);
+        double lon = Double.parseDouble(longitude);
+        Point newPoint = geomFactory.createPoint(new Coordinate(lon, lat));
+
+        // 添加到Quadtree和PointLog
+        quadTree.insert(new Envelope(new Coordinate(lon, lat)), newPoint);
+        String[] params = new String[]{MMSI, timestamp, latitude, longitude, sog, cog, type};
+        PointLog.add(params);
+
+
+        // 构建查询的包围盒
+        Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
+        searchEnv.expandBy(1000); // 调整值以匹配数据的实际分布
+        // 查询附近的点
+        List<Point> queryResults = quadTree.query(searchEnv);
+
+        System.out.println("本次包围盒包含的点数为: " + queryResults.size());
+        // 准备数据
+        ArrayList<Attribute> attributes = new ArrayList<>();
+        attributes.add(new Attribute("longitude"));
+        attributes.add(new Attribute("latitude"));
+        Instances dataset = new Instances("QueryResults", attributes, queryResults.size());
+
+
+        // 填充数据
+        for (Point point : queryResults) {
+            double[] values = new double[dataset.numAttributes()];
+            values[0] = point.getCoordinate().x; // 经度
+            values[1] = point.getCoordinate().y; // 纬度
+            dataset.add(new DenseInstance(1.0, values));
+        }
+        dataset.setClassIndex(-1); // 无分类属性
+        // 使用IBk
+        int K = 6;
+        IBk knn = new IBk(K);
+
+        // 添加一个名为"class"的假类属性（如果还没有添加的话）
+        if (dataset.attribute("class") == null) {
+            dataset.insertAttributeAt(new Attribute("class"), dataset.numAttributes());
+            for (int i = 0; i < dataset.numInstances(); i++) {
+                dataset.instance(i).setValue(dataset.numAttributes() - 1, 0.0); // 给假类属性设置值
+            }
+            dataset.setClassIndex(dataset.numAttributes() - 1); // 设置这个新属性为类属性
+        }
+
+        try {
+            knn.buildClassifier(dataset); // 根据数据集建立KNN模型
+
+            // 使用LinearNNSearch进行搜索，这里可以根据需要选择不同的搜索算法
+            LinearNNSearch search = new LinearNNSearch(dataset);
+            knn.setNearestNeighbourSearchAlgorithm(search);
+
+            ArrayList<Double> kDistances = new ArrayList<>(); // 存储所有点的第K个最近邻的距离
+
+            // 对于数据集中的每个点计算其K个最近邻并存储第K个最近邻的距离
+            for (int i = 0; i < dataset.numInstances(); i++) {
+                Instances nearestInstances = search.kNearestNeighbours(dataset.instance(i), K);
+                double[] distances = search.getDistances();
+                double kthDistance = distances[distances.length - 1]; // 第K个最近邻的距离
+                kDistances.add(kthDistance);
+            }
+
+            // 对所有的第K个最近邻的距离进行排序
+            Collections.sort(kDistances);
+
+            // 寻找距离的最大增量，认为是拐点
+            double maxDelta = 0;
+            double radius = 0; // 这将是我们找到的拐点对应的距离值
+            int minpts = 6;
+            for (int i = 1; i < kDistances.size(); i++) {
+                double delta = kDistances.get(i) - kDistances.get(i - 1);
+                if (delta > maxDelta) {
+                    maxDelta = delta;
+                    radius = kDistances.get(i);
+                }
+            }
+            // 更新radius值
+            algorithm1.radius = radius;
+            algorithm1.minpts = minpts ;
+            // 调用URE方法
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
+        calculate++;
+        System.out.println("现在是第"+calculate+"次调用URE");
+
+
+    }
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371; // 地球半径，单位是千米
         double latDistance = Math.toRadians(lat2 - lat1);
@@ -266,6 +379,11 @@ public class DBSCAN {
         return distance * 1000; // 将千米转换为米
     }
 
+    private double calculateEuclideanDistance(double x1, double y1, double x2, double y2) {
+        double deltaX = x2 - x1;
+        double deltaY = y2 - y1;
+        return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    }
 
 }
 

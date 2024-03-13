@@ -204,7 +204,7 @@ public class DBSCAN {
 
         // 构建查询的包围盒
         Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
-        searchEnv.expandBy(0.05); // 调整值以匹配数据的实际分布
+        searchEnv.expandBy(0.02); // 调整值以匹配数据的实际分布
 
         // 查询附近的点
         List<?> queryResults = quadTree.query(searchEnv);

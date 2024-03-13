@@ -22,7 +22,7 @@ class Main {
         // 调用增量DBscanlist函数获取处理后的列表
         List<SinglePoint> resultList = dbscan.DBscanlist();
         //先保存第一步的结果
-        String outputFilePath1 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\ec_dbscan1new20180430_08_16min4env0.05.csv";
+        String outputFilePath1 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\ec_hv_dbscan1new20180430_08_16min4env0.02.csv";
 //        saveToCSV(resultList, outputFilePath);
         saveToCSV1(resultList, outputFilePath1);
         System.out.println("第一步结果保存成功");

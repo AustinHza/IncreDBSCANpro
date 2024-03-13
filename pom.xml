@@ -18,6 +18,11 @@
             <artifactId>jts-core</artifactId>
             <version>1.18.1</version> <!-- 检查是否有更新版本 -->
         </dependency>
+        <dependency>
+            <groupId>nz.ac.waikato.cms.weka</groupId>
+            <artifactId>weka-stable</artifactId>
+            <version>3.8.5</version> <!-- 使用最新的稳定版本或您需要的版本 -->
+        </dependency>
 
     </dependencies>
 

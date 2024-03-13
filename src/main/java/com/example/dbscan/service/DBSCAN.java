@@ -52,8 +52,8 @@ public class DBSCAN {
 
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // SQL查询语句
-//            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180430_08_16\"";
-            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new20180430_08_16\"";
+            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180430_08_16\"";
+//            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new20180430_08_16\"";
             System.out.println("数据库查询成功");
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -64,10 +64,10 @@ public class DBSCAN {
                     rowCount++;  // 每次循环增加一行计数
                     String MMSI = resultSet.getString("mmsi");
                     String timestamp = resultSet.getString("time");
-//                    String longitude = resultSet.getString("lon");
-//                    String latitude = resultSet.getString("lat");
-                    String longitude = resultSet.getString("mercator_x");
-                    String latitude = resultSet.getString("mercator_y");
+                    String longitude = resultSet.getString("lon");
+                    String latitude = resultSet.getString("lat");
+//                    String longitude = resultSet.getString("mercator_x");
+//                    String latitude = resultSet.getString("mercator_y");
                     String cog = resultSet.getString("course");
                     String sog = resultSet.getString("speed");
                     String type = resultSet.getString("status");
@@ -204,7 +204,7 @@ public class DBSCAN {
 
         // 构建查询的包围盒
         Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
-        searchEnv.expandBy(1500); // 调整值以匹配数据的实际分布
+        searchEnv.expandBy(0.05); // 调整值以匹配数据的实际分布
 
         // 查询附近的点
         List<?> queryResults = quadTree.query(searchEnv);
@@ -221,47 +221,49 @@ public class DBSCAN {
 
         // 对距离进行排序
         Collections.sort(distances);
-        //***********************************************按距离增长差值选择radius********************************
-        // 计算每两个连续距离之间的差值
-        List<Double> distanceDifferences = new ArrayList<>();
-        for (int i = 1; i < distances.size(); i++) {
-            double distanceDifference = distances.get(i) - distances.get(i - 1);
-            distanceDifferences.add(distanceDifference);
-        }
-
-        // 找到差值最大的点
-        double maxDistanceChange = 0;
-        if (!distanceDifferences.isEmpty()) {
-            maxDistanceChange = Collections.max(distanceDifferences);
-        }
-        int indexMaxChange = distanceDifferences.indexOf(maxDistanceChange) + 1; // 加1因为差分后的数组比原数组少一个元素
-        double radius = distances.get(indexMaxChange);
-        int minpts = 8; // 这里的minpts可以保持不变或根据需要调整
-        //***********************************************按距离增长差值选择radius********************************
+//        //***********************************************按距离增长差值选择radius********************************
+//        // 计算每两个连续距离之间的差值
+//        List<Double> distanceDifferences = new ArrayList<>();
+//        for (int i = 1; i < distances.size(); i++) {
+//            double distanceDifference = distances.get(i) - distances.get(i - 1);
+//            distanceDifferences.add(distanceDifference);
+//        }
+//
+//        // 找到差值最大的点并计算radius
+//        double radius = 1500; // 默认距离
+//        if (!distanceDifferences.isEmpty()) {
+//            double maxDistanceChange = Collections.max(distanceDifferences);
+//            int indexMaxChange = distanceDifferences.indexOf(maxDistanceChange) + 1; // 加1因为差分后的数组比原数组少一个元素
+//            if (indexMaxChange < distances.size()) {
+//                radius = distances.get(indexMaxChange); // 更新radius为实际计算值
+//            }
+//        }
+//        int minpts = 4; // 这里的minpts可以保持不变或根据需要调整
+//        //***********************************************按距离增长差值选择radius********************************
 
         //***********************************************按距离增长率选择radius********************************
 
-//        // 计算每两个连续距离之间的增长率
-//        List<Double> growthRates = new ArrayList<>();
-//        for (int i = 1; i < distances.size(); i++) {
-//            double previousDistance = distances.get(i - 1);
-//            double currentDistance = distances.get(i);
-//            double growthRate = (currentDistance - previousDistance) / previousDistance;
-//            growthRates.add(growthRate);
-//        }
-//
-//        // 找到增长率最大的突变点
-//        double maxGrowthRateChange = 0;
-//        int minpts = 8;
-//        double radius = 0;
-//        for (int i = 1; i < growthRates.size(); i++) {
-//            double growthRateChange = growthRates.get(i) - growthRates.get(i - 1);
-//            if (growthRateChange > maxGrowthRateChange) {
-//                maxGrowthRateChange = growthRateChange;
-//                radius = distances.get(i);
-////                minpts = i + 1; // 增长率最大突变点的索引+1作为minpts
-//            }
-//        }
+        // 计算每两个连续距离之间的增长率
+        List<Double> growthRates = new ArrayList<>();
+        for (int i = 1; i < distances.size(); i++) {
+            double previousDistance = distances.get(i - 1);
+            double currentDistance = distances.get(i);
+            double growthRate = (currentDistance - previousDistance) / previousDistance;
+            growthRates.add(growthRate);
+        }
+
+        // 找到增长率最大的突变点
+        double maxGrowthRateChange = 0;
+        int minpts = 4;
+        double radius = 0;
+        for (int i = 1; i < growthRates.size(); i++) {
+            double growthRateChange = growthRates.get(i) - growthRates.get(i - 1);
+            if (growthRateChange > maxGrowthRateChange) {
+                maxGrowthRateChange = growthRateChange;
+                radius = distances.get(i);
+//                minpts = i + 1; // 增长率最大突变点的索引+1作为minpts
+            }
+        }
         //***********************************************按距离增长率选择radius********************************
         // 更新DBSCAN参数
         algorithm1.radius = radius ;

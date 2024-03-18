@@ -266,7 +266,7 @@ public class IncDBSCANCluster {
         List<Point> neighbors = new ArrayList<>();
         for (Point p : wayPointclass.points) {
             // include point itself
-            if (point.haversineDistance(p) <= eps) {
+            if (point.DistanceCalculate(p) <= eps) {
                 neighbors.add(p);
             }
 

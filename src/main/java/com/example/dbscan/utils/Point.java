@@ -46,16 +46,17 @@ public class Point {
         this.epsNbrNum = 1;  // number of eps-neighbors around me
     }
 
-    public double euclidDist(Point p1) {
-        double sumDistSq = 0.0;
-        int d = position.length;
-        for (int i = 0; i < d; i++) {
-            sumDistSq += (position[i] - p1.position[i]) * (position[i] - p1.position[i]);
-        }
-        return Math.sqrt(sumDistSq);
-    }
-
-    public double haversineDistance(Point p1) {
+    //这个是欧氏距离计算
+//    public double DistanceCalculate(Point p1) {
+//        double sumDistSq = 0.0;
+//        int d = position.length;
+//        for (int i = 0; i < d; i++) {
+//            sumDistSq += (position[i] - p1.position[i]) * (position[i] - p1.position[i]);
+//        }
+//        return Math.sqrt(sumDistSq);
+//    }
+    //这个是harversine距离计算，两种距离计算，用哪个就把哪个解开注释
+    public double DistanceCalculate(Point p1) {
         final int R = 6371000; // 地球平均半径，单位：米
         double lat1 = Math.toRadians(this.position[0]);
         double lon1 = Math.toRadians(this.position[1]);

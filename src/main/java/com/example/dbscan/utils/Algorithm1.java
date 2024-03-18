@@ -60,6 +60,7 @@ public class Algorithm1 {
     public void URE(String mmsi, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
         try {
 //            System.out.println("接收到的DBCSAN参数是："+minpts+"和" + radius);
+            System.out.println("坐标是是："+latitude+"和" + longitude);
             UREcalculate++;
 //            System.out.println("第" + UREcalculate + "次调用URE");
             Date time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
@@ -67,6 +68,13 @@ public class Algorithm1 {
                 sum = 0;
                 for (int i = 0; i < vessels.size(); i++) {
                     if ((time.getTime() / 1000 - vessels.get(i).lastupdate.getTime() / 1000) >= 60 * 60 * 3 && vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).visited != true) {
+/*                       这里对应伪代码Al1中26-33行，对每艘船舶，检查当前时间(time)与船舶最后更新时间(vessels.get(i).lastupdate)的差是否大于或等于3小时（60秒 * 60分钟 * 3）。如果是，
+                        表示该船舶已经3小时未更新，并且该船舶的最后一条轨迹(tracks)未被访问过，则标为EXS出口点进行相关聚类操作并且把该船只标为lost*/
+                        int mid1;
+                        mid1 = Integer.valueOf(vessels.get(i).MMSI);
+                        Vessel vessel = new Vessel(mid1);
+                        vessel.status = "lost";
+
                         //调用DBCAN参数计算程序
                         parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
@@ -90,6 +98,8 @@ public class Algorithm1 {
         int mid;
         mid = Integer.valueOf(mmsi);
         if (mmsid.contains(mid) == false) {
+/*            这个if对应伪代码2-8行，如果船舶对象集合中未含有该MMSI所表标识的传播对象，则表示该船泊第一次于监测窗
+            口出现，将该 message 所表示的信息加入到 ENs 中，并将此 Vessel 标记为 sailing*/
             mmsid.add(mid);
             Vessel vessel = new Vessel(mid);
             Point point = new Point(mmsi, timestamp, latitude, longitude, sog, cog, type);
@@ -112,6 +122,7 @@ public class Algorithm1 {
                 algorithm3.ROM(vessels.get(vessels.size() - 1), routes);
             }
         } else {
+            /* 这个else对应伪代码9-25行，如果船舶对象集合中含有该MMSI所表标识的传播对象，则判断其状态*/
             for (int i = 0; i < vessels.size(); i++) {
                 if (vessels.get(i).MMSI == mid) {
                     Point point = new Point(mmsi, timestamp, latitude, longitude, sog, cog, type);
@@ -122,8 +133,9 @@ public class Algorithm1 {
                     Date time2 = vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 2).timestamp;
                     int dt = (int) (time1.getTime() - time2.getTime());
                     //vessels.get(i).Avgspeed = vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).euclidDist(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 2)) / dt;
-                    vessels.get(i).Avgspeed = vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).haversineDistance(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 2)) / dt;
+                    vessels.get(i).Avgspeed = vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).DistanceCalculate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 2)) / dt;
                     if (vessels.get(i).Avgspeed < minspeed && vessels.get(i).status == "sailing") {
+/*                      这里对应10-18行如果航速小于最小值且船舶更新前的状态为sailing 则当前message满足停泊点集合POs的条件*/
                         vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).classed = true;
                         vessels.get(i).status = "stationary";
                         //调用DBCAN参数计算程序
@@ -139,19 +151,29 @@ public class Algorithm1 {
                             algorithm3.ROM(vessels.get(i), routes);
                         }
                     }
-                   /* if(vessel.status=="lost")
+                    if(vessels.get(i).status=="lost")
+                   //这里应该对应的是19-25行，但没实现，可以实现以下
                     {
-                        vessel.status="sailing";
-                        IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts,POs,vessels,routes);
-                        incCluster.incrementalUpdate(point);
-                        ENs.points=incCluster.points;
-                        vessels=incCluster.vessels;
-                        routes=incCluster.routes;
-                        Algorithm3 algorithm3=new Algorithm3(vessel,routes);
-                        algorithm3.ROM();
-                        vessel=algorithm3.vessel;
-                        routes=algorithm3.routes;
-                    }*/
+                        vessels.get(i).status="sailing";
+                        //调用DBCAN参数计算程序
+                        parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
+                        IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
+                        incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), POs, vessels, routes);
+                        if (incCluster.flag == 1) {
+                            //vessels.get(i).tracks.get(vessels.get(i).tracks.size()-1).clusterIndex=POs.points.get(POs.points.size()-1).clusterIndex;
+                            vessels.get(i).wps.add("ENs" + POs.points.get(POs.points.size() - 1).clusterIndex);
+                            vessels.get(i).timestampwps.add(POs.points.get(POs.points.size() - 1));
+                            Algorithm3 algorithm3 = new Algorithm3();
+                            algorithm3.ROM(vessels.get(i), routes);
+                        }
+//                        ENs.points=incCluster.points;
+//                        vessels=incCluster.vessels;
+//                        routes=incCluster.routes;
+//                        Algorithm3 algorithm3=new Algorithm3(vessel,routes);
+//                        algorithm3.ROM();
+//                        vessel=algorithm3.vessel;
+//                        routes=algorithm3.routes;
+                    }
                     /*if((point.timestamp.getTime()/1000-vessels.get(i).tracks.get(vessels.get(i).tracks.size()-2).timestamp.getTime()/1000)>=tao)
                     {
                         vessels.get(i).status="sailing";
@@ -200,7 +222,7 @@ public class Algorithm1 {
 
         // 构建查询的包围盒
         Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
-        searchEnv.expandBy(1500); // 调整值以匹配数据的实际分布
+        searchEnv.expandBy(10000); // 调整值以匹配数据的实际分布
 
         // 查询附近的点
         List<?> queryResults = quadTree.query(searchEnv);

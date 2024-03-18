@@ -53,7 +53,7 @@ public class DBSCAN {
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // SQL查询语句
 //            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180401_0407_clean\"";
-            String sql = "SELECT mmsi, time, mercator_x, mercator_y, course, speed, status FROM  \"new20180401_0407_clean\"";
+            String sql = "SELECT mmsi, time, lon, lat, mercator_x, mercator_y, course, speed, status FROM  \"new20180430_08_16\" ORDER BY time ASC";
             System.out.println("数据库查询成功");
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -64,10 +64,10 @@ public class DBSCAN {
                     rowCount++;  // 每次循环增加一行计数
                     String MMSI = resultSet.getString("mmsi");
                     String timestamp = resultSet.getString("time");
-//                    String longitude = resultSet.getString("lon");
-//                    String latitude = resultSet.getString("lat");
-                    String longitude = resultSet.getString("mercator_x");
-                    String latitude = resultSet.getString("mercator_y");
+                    String longitude = resultSet.getString("lon");
+                    String latitude = resultSet.getString("lat");
+                    String mercator_x = resultSet.getString("mercator_x");
+                    String mercator_y = resultSet.getString("mercator_y");
                     String cog = resultSet.getString("course");
                     String sog = resultSet.getString("speed");
                     String type = resultSet.getString("status");
@@ -76,7 +76,7 @@ public class DBSCAN {
 //                    handleNewDataQUAD(MMSI, timestamp, latitude, longitude, sog, cog, type);//新版的参数计算，加入了四叉树
 //                    handleNewDataQUADKnn(MMSI, timestamp, latitude, longitude, sog, cog, type);//用KNN计算
 
-                    algorithm1.URE(MMSI, timestamp, latitude, longitude, sog, cog, type);
+                    algorithm1.URE(MMSI, timestamp, mercator_x, mercator_y, sog, cog, type);//用WGS就用longitude和latitude，用墨卡托就用mercator_x和mercator_y
 
 
 //                    System.out.println("longitude:"+longitude+"latitude:"+latitude+"time: "+timestamp);

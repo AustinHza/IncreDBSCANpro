@@ -28,6 +28,7 @@ public class IncDBSCANCluster {
         List<Point> candidates = new ArrayList<>();
         List<Point> neighbors = getEpsNeighbors(wayPointclass,newPoint);
         for (Point nbr : neighbors) {
+            //这里对应伪代码2中的9-14行
             if (nbr == newPoint) {
                 // add number of eps-neighbors for new point
                 newPoint.epsNbrNum = neighbors.size();
@@ -36,6 +37,7 @@ public class IncDBSCANCluster {
                     wayPointclass.cores.add(newPoint.pointIndex);
                 }
             } else {
+                //这里对应伪代码2中的4-8行
                 // update number of neighbors.
                 nbr.epsNbrNum++;
                 // q' is core point in {D union p} but not in D.
@@ -49,6 +51,7 @@ public class IncDBSCANCluster {
 
         // find UpdSeed_Ins, q is a core point in {D union p} and
         // q \in N_Eps(q')
+        //对应伪代码2中16-22行
         HashSet<Point> updateSeed = new HashSet<>();
         for (Point q_Prime : candidates) {
             List<Point> q_Prime_Neighbors=getEpsNeighbors(wayPointclass,q_Prime);

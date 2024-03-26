@@ -53,7 +53,7 @@ public class DBSCAN {
         try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password)) {
             // SQL查询语句
 //            String sql = "SELECT mmsi, time, lon, lat, course, speed, status FROM  \"new20180401_0407_clean\"";
-            String sql = "SELECT mmsi, time, lon, lat, mercator_x, mercator_y, course, speed, status FROM  \"new20180430_08_16\" ORDER BY time ASC";
+            String sql = "SELECT mmsi, time, lon, lat, mercator_x, mercator_y, course, speed, status FROM  \"new20180401_0407_clean\" ORDER BY time ASC";
             System.out.println("数据库查询成功");
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql);
                  ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -76,13 +76,14 @@ public class DBSCAN {
 //                    handleNewDataQUAD(MMSI, timestamp, latitude, longitude, sog, cog, type);//新版的参数计算，加入了四叉树
 //                    handleNewDataQUADKnn(MMSI, timestamp, latitude, longitude, sog, cog, type);//用KNN计算
 
-                    algorithm1.URE(MMSI, timestamp, mercator_x, mercator_y, sog, cog, type);//用WGS就用longitude和latitude，用墨卡托就用mercator_x和mercator_y
+                    algorithm1.URE(MMSI, timestamp, mercator_y, mercator_x, sog, cog, type);//用WGS就用longitude和latitude，用墨卡托就用mercator_x和mercator_y
 
 
-//                    System.out.println("longitude:"+longitude+"latitude:"+latitude+"time: "+timestamp);
+//                    System.out.println("longitude:"+mercator_x+"latitude:"+mercator_y+"time: "+timestamp);
                 }
 
                 System.out.println("查询结果共有 " + rowCount + " 行。");
+                printWayPoints();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -93,15 +94,15 @@ public class DBSCAN {
             for (int j = 0; j < algorithm1.routes.get(i).params.size(); j++) {
                 double x;
                 double y;
-                x = algorithm1.routes.get(i).params.get(j).latitude;
-                y = algorithm1.routes.get(i).params.get(j).longitude;
+                x = algorithm1.routes.get(i).params.get(j).longitude;
+                y = algorithm1.routes.get(i).params.get(j).latitude;
                 String mmsi = algorithm1.routes.get(i).params.get(j).pointIndex + "";
                 Date timestamp = algorithm1.routes.get(i).params.get(j).timestamp;
 //                System.out.println("时间测试:"+timestamp);
                 double sog = algorithm1.routes.get(i).params.get(j).sog;
                 double cog = algorithm1.routes.get(i).params.get(j).cog;
                 String type = algorithm1.routes.get(i).params.get(j).type;
-                list.add(new SinglePoint(cog, sog, timestamp, y, x, mmsi, algorithm1.routes.get(i).routename, type));
+                list.add(new SinglePoint(cog, sog, timestamp, x, y, mmsi, algorithm1.routes.get(i).routename, type));
             }
         }
         // 使用HashSet来存储不同的routename
@@ -115,6 +116,12 @@ public class DBSCAN {
         // 输出不同routename的数量
         System.out.println("共有 " + uniqueRouteNames.size() + " 种不同的 routename。");
         return list;
+    }
+
+    public void printWayPoints() {
+        algorithm1.ENs.savePointsInfoToCSV("D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\xyhhENSutm_ec_ec_6_new20180401_0407_cleanmin10env10000.csv");
+        algorithm1.POs.savePointsInfoToCSV("D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\xyhhPOSutm_ec_ec_6_new20180401_0407_cleanmin10env10000.csv");
+        algorithm1.EXs.savePointsInfoToCSV("D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\xyhhEXSutm_ec_ec_6_new20180401_0407_cleanmin10env10000.csv");
     }
 
     private void handleNewData(String MMSI, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
@@ -387,6 +394,8 @@ public class DBSCAN {
         double deltaY = y2 - y1;
         return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     }
+
+
 
 }
 

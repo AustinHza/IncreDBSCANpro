@@ -34,6 +34,10 @@ public class Algorithm1 {
     public int IncDBcalculate = 0;//计数器，记录IncDBSCAN被调用的次数
     public List<String[]> PointLog = new ArrayList<>();//保存读入的点数据，作为参数计算基础
 
+    public int ENScal = 0;
+    public int EXScal = 0;
+    public int POScal = 0;
+
     private Quadtree quadTree;
     private GeometryFactory geomFactory;
 
@@ -45,8 +49,8 @@ public class Algorithm1 {
 
 //    int minpts = 10;// neibors num（最小邻域点数）
 //    double radius = 10000;// distance（聚类半径为radius）70
-    public int minpts = 4;// neibors num（最小邻域点数）
-    public double radius = 20000;// distance（聚类半径为radius）70
+    public int minpts = 10;// neibors num（最小邻域点数）
+    public double radius = 10000;// distance（聚类半径为radius）70
 
     /*public Algorithm1(String timestamp)
     {
@@ -60,14 +64,14 @@ public class Algorithm1 {
     public void URE(String mmsi, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
         try {
 //            System.out.println("接收到的DBCSAN参数是："+minpts+"和" + radius);
-            System.out.println("坐标是是："+latitude+"和" + longitude);
+//            System.out.println("坐标是是："+latitude+"和" + longitude);
             UREcalculate++;
 //            System.out.println("第" + UREcalculate + "次调用URE");
             Date time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
             if (sum == 100000) {
                 sum = 0;
                 for (int i = 0; i < vessels.size(); i++) {
-                    if ((time.getTime() / 1000 - vessels.get(i).lastupdate.getTime() / 1000) >= 60 * 60 * 3 && vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).visited != true) {
+                    if ((time.getTime() / 1000 - vessels.get(i).lastupdate.getTime() / 1000) >= 60 * 60 * 3 && !vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).visited &&vessels.get(i).status!="lost") {
 /*                       这里对应伪代码Al1中26-33行，对每艘船舶，检查当前时间(time)与船舶最后更新时间(vessels.get(i).lastupdate)的差是否大于或等于3小时（60秒 * 60分钟 * 3）。如果是，
                         表示该船舶已经3小时未更新，并且该船舶的最后一条轨迹(tracks)未被访问过，则标为EXS出口点进行相关聚类操作并且把该船只标为lost*/
                         int mid1;
@@ -79,6 +83,9 @@ public class Algorithm1 {
                         parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), EXs, vessels, routes);
+                        EXScal++;
+                        System.out.println("EXS数量：" + EXScal);
+
 
                         if (incCluster.flag == 1) {
                             //vessels.get(i).tracks.get(vessels.get(i).tracks.size()-1).clusterIndex=POs.points.get(POs.points.size()-1).clusterIndex;
@@ -113,7 +120,8 @@ public class Algorithm1 {
             parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
             IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
             incCluster.incrementalUpdate(vessels.get(vessels.size() - 1).tracks.get(vessels.get(vessels.size() - 1).tracks.size() - 1), ENs, vessels, routes);
-
+            ENScal++;
+            System.out.println("ENS数量：" + ENScal);
             if (incCluster.flag == 1) {
                 //vessels.get(vessels.size()-1).tracks.get(vessels.get(vessels.size()-1).tracks.size()-1).clusterIndex=ENs.points.get(ENs.points.size()-1).clusterIndex;
                 vessels.get(vessels.size() - 1).wps.add("ENs" + ENs.points.get(ENs.points.size() - 1).clusterIndex);
@@ -142,6 +150,8 @@ public class Algorithm1 {
                         parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), POs, vessels, routes);
+                        POScal++;
+                        System.out.println("POs数量：" + POScal);
 
                         if (incCluster.flag == 1) {
                             //vessels.get(i).tracks.get(vessels.get(i).tracks.size()-1).clusterIndex=POs.points.get(POs.points.size()-1).clusterIndex;
@@ -152,17 +162,20 @@ public class Algorithm1 {
                         }
                     }
                     if(vessels.get(i).status=="lost")
-                   //这里应该对应的是19-25行，但没实现，可以实现以下
+                   //这里应该对应的是19-25行
                     {
                         vessels.get(i).status="sailing";
                         //调用DBCAN参数计算程序
                         parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
-                        incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), POs, vessels, routes);
+                        incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), ENs, vessels, routes);
+                        ENScal++;
+                        System.out.println("ENs数量：" + ENScal);
+
                         if (incCluster.flag == 1) {
                             //vessels.get(i).tracks.get(vessels.get(i).tracks.size()-1).clusterIndex=POs.points.get(POs.points.size()-1).clusterIndex;
-                            vessels.get(i).wps.add("ENs" + POs.points.get(POs.points.size() - 1).clusterIndex);
-                            vessels.get(i).timestampwps.add(POs.points.get(POs.points.size() - 1));
+                            vessels.get(i).wps.add("ENs" + ENs.points.get(ENs.points.size() - 1).clusterIndex);
+                            vessels.get(i).timestampwps.add(ENs.points.get(ENs.points.size() - 1));
                             Algorithm3 algorithm3 = new Algorithm3();
                             algorithm3.ROM(vessels.get(i), routes);
                         }
@@ -219,7 +232,10 @@ public class Algorithm1 {
 
         // 添加到Quadtree
         quadTree.insert(new Envelope(new Coordinate(lon, lat)), newPoint);
-
+//        // 创建一个大到足以覆盖整个四叉树的 Envelope
+//        Envelope bigEnvelope = new Envelope(
+//                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
+//                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         // 构建查询的包围盒
         Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
         searchEnv.expandBy(10000); // 调整值以匹配数据的实际分布
@@ -232,7 +248,7 @@ public class Algorithm1 {
         for (Object item : queryResults) {
             org.locationtech.jts.geom.Point candidate = (org.locationtech.jts.geom.Point) item;
             if (!candidate.equalsExact(newPoint)) {
-                double distance = calculateHaversine(lat, lon, candidate.getY(), candidate.getX());
+                double distance = calculateEuclidean(lat, lon, candidate.getY(), candidate.getX());
                 distances.add(distance);
             }
         }
@@ -240,48 +256,70 @@ public class Algorithm1 {
         // 对距离进行排序
         Collections.sort(distances);
 //        //***********************************************按距离增长差值选择radius********************************
-//        // 计算每两个连续距离之间的差值
-//        List<Double> distanceDifferences = new ArrayList<>();
-//        for (int i = 1; i < distances.size(); i++) {
-//            double distanceDifference = distances.get(i) - distances.get(i - 1);
-//            distanceDifferences.add(distanceDifference);
-//        }
-//
-//        // 找到差值最大的点并计算radius
-//        double radius = 1500; // 默认距离
-//        if (!distanceDifferences.isEmpty()) {
-//            double maxDistanceChange = Collections.max(distanceDifferences);
-//            int indexMaxChange = distanceDifferences.indexOf(maxDistanceChange) + 1; // 加1因为差分后的数组比原数组少一个元素
-//            if (indexMaxChange < distances.size()) {
-//                radius = distances.get(indexMaxChange); // 更新radius为实际计算值
-//            }
-//        }
-//        int minpts = 4; // 这里的minpts可以保持不变或根据需要调整
+        double radius = 10000; // 默认距离
+
+        // 只有当列表中有足够的数据时，才进行斜率计算
+        if (distances.size() > 1) {
+            // 计算每两个连续距离之间的斜率
+            List<Double> slopes = new ArrayList<>();
+            for (int i = 1; i < distances.size(); i++) {
+                slopes.add(distances.get(i) - distances.get(i - 1));
+            }
+
+            // 找到斜率最大的索引
+            double maxSlope = -1;
+            int maxSlopeIndex = -1;
+            for (int i = 0; i < slopes.size(); i++) {
+                if (slopes.get(i) > maxSlope) {
+                    maxSlope = slopes.get(i);
+                    maxSlopeIndex = i;
+                }
+            }
+
+            // 拐点在原始距离列表中的位置是 maxSlopeIndex + 1
+            int turningPointIndex = maxSlopeIndex + 1;
+
+            // 检查拐点索引是否在距离列表范围内
+            if (turningPointIndex < distances.size()) {
+                // 获取拐点对应的距离值作为radius
+                radius = distances.get(turningPointIndex);
+            }
+        }
 //        //***********************************************按距离增长差值选择radius********************************
 
         //***********************************************按距离增长率选择radius********************************
-
-        // 计算每两个连续距离之间的增长率
-        List<Double> growthRates = new ArrayList<>();
-        for (int i = 1; i < distances.size(); i++) {
-            double previousDistance = distances.get(i - 1);
-            double currentDistance = distances.get(i);
-            double growthRate = (currentDistance - previousDistance) / previousDistance;
-            growthRates.add(growthRate);
-        }
-
-        // 找到增长率最大的突变点
-        double maxGrowthRateChange = 0;
-        int minpts = 4;
-        double radius = 0;
-        for (int i = 1; i < growthRates.size(); i++) {
-            double growthRateChange = growthRates.get(i) - growthRates.get(i - 1);
-            if (growthRateChange > maxGrowthRateChange) {
-                maxGrowthRateChange = growthRateChange;
-                radius = distances.get(i);
-//                minpts = i + 1; // 增长率最大突变点的索引+1作为minpts
-            }
-        }
+//
+//        // 计算每两个连续距离之间的增长率
+//        List<Double> growthRates = new ArrayList<>();
+//        for (int i = 1; i < distances.size(); i++) {
+//            double previousDistance = distances.get(i - 1);
+//            double currentDistance = distances.get(i);
+//            // 防止除以零
+//            if (previousDistance != 0) {
+//                double growthRate = (currentDistance - previousDistance) / previousDistance;
+//                growthRates.add(growthRate);
+//            }
+//        }
+//
+//        // 找到增长率最大的突变点
+//        int maxGrowthRateIndex = 0;
+//        double maxGrowthRateChange = 0;
+//        for (int i = 1; i < growthRates.size(); i++) {
+//            double previousGrowthRate = growthRates.get(i - 1);
+//            double currentGrowthRate = growthRates.get(i);
+//            double growthRateChange = Math.abs(currentGrowthRate - previousGrowthRate);
+//            if (growthRateChange > maxGrowthRateChange) {
+//                maxGrowthRateChange = growthRateChange;
+//                maxGrowthRateIndex = i;
+//            }
+//        }
+//
+//        // 使用突变点之后的第一个距离作为radius
+//        double radius = distances.isEmpty() ? 0 : distances.get(Math.min(maxGrowthRateIndex + 1, distances.size() - 1));
+//        // 如果radius为0，使用默认值10000
+//        if (radius == 0) {
+//            radius = 10000;
+//        }
         //***********************************************按距离增长率选择radius********************************
         // 更新DBSCAN参数
         this.radius = radius ;

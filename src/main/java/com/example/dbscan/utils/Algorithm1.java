@@ -61,7 +61,7 @@ public class Algorithm1 {
     }*/
 
 
-    public void URE(String mmsi, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
+    public void URE(String mmsi, String timestamp, String mercator_x, String mercator_y, String sog, String cog, String type, String latitude, String longitude) {
         try {
 //            System.out.println("接收到的DBCSAN参数是："+minpts+"和" + radius);
 //            System.out.println("坐标是是："+latitude+"和" + longitude);
@@ -80,7 +80,7 @@ public class Algorithm1 {
                         vessel.status = "lost";
 
                         //调用DBCAN参数计算程序
-                        parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
+                        parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), EXs, vessels, routes);
                         EXScal++;
@@ -109,7 +109,7 @@ public class Algorithm1 {
             口出现，将该 message 所表示的信息加入到 ENs 中，并将此 Vessel 标记为 sailing*/
             mmsid.add(mid);
             Vessel vessel = new Vessel(mid);
-            Point point = new Point(mmsi, timestamp, latitude, longitude, sog, cog, type);
+            Point point = new Point(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type,latitude,longitude);
             point.classed = true;
             vessel.tracks.add(point);
             vessel.status = "sailing";
@@ -117,7 +117,7 @@ public class Algorithm1 {
             vessel.lastupdate = point.timestamp;
             vessels.add(vessel);
             //调用DBCAN参数计算程序
-            parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
+            parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
             IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
             incCluster.incrementalUpdate(vessels.get(vessels.size() - 1).tracks.get(vessels.get(vessels.size() - 1).tracks.size() - 1), ENs, vessels, routes);
             ENScal++;
@@ -133,7 +133,7 @@ public class Algorithm1 {
             /* 这个else对应伪代码9-25行，如果船舶对象集合中含有该MMSI所表标识的传播对象，则判断其状态*/
             for (int i = 0; i < vessels.size(); i++) {
                 if (vessels.get(i).MMSI == mid) {
-                    Point point = new Point(mmsi, timestamp, latitude, longitude, sog, cog, type);
+                    Point point = new Point(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type,latitude,longitude);
                     vessels.get(i).tracks.add(point);
                     //vessels.get(i).Avgspeed=point.sog;
                     vessels.get(i).lastupdate = point.timestamp;
@@ -147,7 +147,7 @@ public class Algorithm1 {
                         vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).classed = true;
                         vessels.get(i).status = "stationary";
                         //调用DBCAN参数计算程序
-                        parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
+                        parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), POs, vessels, routes);
                         POScal++;
@@ -166,7 +166,7 @@ public class Algorithm1 {
                     {
                         vessels.get(i).status="sailing";
                         //调用DBCAN参数计算程序
-                        parammeterCalculation(mmsi, timestamp, latitude, longitude, sog, cog, type);
+                        parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), ENs, vessels, routes);
                         ENScal++;
@@ -221,23 +221,23 @@ public class Algorithm1 {
 
     }
 
-    private void parammeterCalculation(String MMSI, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
+    private void parammeterCalculation(String MMSI, String timestamp, String mercator_x, String mercator_y, String sog, String cog, String type) {
         // 将传入的参数保存在数组中并添加到PointLog中
-        String[] params = new String[]{MMSI, timestamp, latitude, longitude, sog, cog, type};
+        String[] params = new String[]{MMSI, timestamp, mercator_x, mercator_y, sog, cog, type};
         PointLog.add(params);
 
-        double lat = Double.parseDouble(latitude);
-        double lon = Double.parseDouble(longitude);
-        org.locationtech.jts.geom.Point newPoint = geomFactory.createPoint(new Coordinate(lon, lat));
+        double mercatorx = Double.parseDouble(mercator_x);
+        double mercatory = Double.parseDouble(mercator_y);
+        org.locationtech.jts.geom.Point newPoint = geomFactory.createPoint(new Coordinate(mercatorx, mercatory));
 
         // 添加到Quadtree
-        quadTree.insert(new Envelope(new Coordinate(lon, lat)), newPoint);
+        quadTree.insert(new Envelope(new Coordinate(mercatorx, mercatory)), newPoint);
 //        // 创建一个大到足以覆盖整个四叉树的 Envelope
 //        Envelope bigEnvelope = new Envelope(
 //                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY,
 //                Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
         // 构建查询的包围盒
-        Envelope searchEnv = new Envelope(new Coordinate(lon, lat));
+        Envelope searchEnv = new Envelope(new Coordinate(mercatorx, mercatory));
         searchEnv.expandBy(10000); // 调整值以匹配数据的实际分布
 
         // 查询附近的点
@@ -248,7 +248,7 @@ public class Algorithm1 {
         for (Object item : queryResults) {
             org.locationtech.jts.geom.Point candidate = (org.locationtech.jts.geom.Point) item;
             if (!candidate.equalsExact(newPoint)) {
-                double distance = calculateEuclidean(lat, lon, candidate.getY(), candidate.getX());
+                double distance = calculateEuclidean(mercatorx, mercatory, candidate.getX(), candidate.getY());
                 distances.add(distance);
             }
         }

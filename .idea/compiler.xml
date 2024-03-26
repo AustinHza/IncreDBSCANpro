@@ -6,11 +6,11 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="IncreDbscantwicejdbcself" />
+        <module name="IncreDbscantwicejdbc" />
         <module name="IncreDbscantwicejdbcpro" />
         <module name="IncreDbscanjdbc" />
         <module name="IncreDbscan" />
-        <module name="IncreDbscantwicejdbc" />
+        <module name="IncreDbscantwicejdbcself" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="8" />

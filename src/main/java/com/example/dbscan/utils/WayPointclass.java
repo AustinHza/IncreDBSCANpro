@@ -30,19 +30,21 @@ public class WayPointclass {
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(filePath))) {
             // 写入CSV文件头
-            bw.write("Timestamp,Latitude,Longitude,SOG,COG,Type,Visited,Classed,ClusterIndex\n");
+            bw.write("Timestamp,mercator_x,mercator_y,SOG,COG,Type,Visited,Classed,ClusterIndex,latitude,longitude\n");
 
             // 遍历points列表，将每个点的信息写入文件
             for (Point point : points) {
                 bw.write(sdf.format(point.timestamp) + "," +
-                        point.latitude + "," +
-                        point.longitude + "," +
+                        point.mercator_x + "," +
+                        point.mercator_y + "," +
                         point.sog + "," +
                         point.cog + "," +
                         point.type + "," +
                         point.visited + "," +
                         point.classed + "," +
-                        point.clusterIndex + "\n");
+                        point.clusterIndex +","+
+                        point.latitude + "," +
+                        point.longitude+"\n");
             }
 
         } catch (IOException e) {

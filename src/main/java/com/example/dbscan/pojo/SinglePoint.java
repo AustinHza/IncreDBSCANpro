@@ -6,24 +6,28 @@ public class SinglePoint {
     private double cog;
     private double sog;
     private Date timestamp;
-    private double longitude;
-    private double latitude;
+    private double mercator_x;
+    private double mercator_y;
     private String MMSI;
     private String name;
     private String type;
+    private double latitude;
+    private double longitude;
 
     public SinglePoint() {
     }
 
-    public SinglePoint(double cog, double sog, Date timestamp, double longitude, double latitude, String MMSI, String name, String type) {
+    public SinglePoint(double cog, double sog, Date timestamp, double mercator_x, double mercator_y, String MMSI, String name, String type, double latitude,double longitude ) {
         this.cog = cog;
         this.sog = sog;
         this.timestamp = timestamp;
-        this.longitude = longitude;
-        this.latitude = latitude;
+        this.mercator_x = mercator_x;
+        this.mercator_y = mercator_y;
         this.MMSI = MMSI;
         this.name = name;
         this.type = type;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public double getCog() {
@@ -92,6 +96,22 @@ public class SinglePoint {
         this.type = type;
     }
 
+    public double getMercator_x() {
+        return mercator_x;
+    }
+
+    public void setMercator_x(double mercator_x) {
+        this.mercator_x = mercator_x;
+    }
+
+    public double getMercator_y() {
+        return mercator_y;
+    }
+
+    public void setMercator_y(double mercator_y) {
+        this.mercator_y = mercator_y;
+    }
+
     @Override
     public String toString() {
 //        return "SinglePoint{" +
@@ -107,11 +127,13 @@ public class SinglePoint {
         return  cog +
                 "," + sog +
                 "," + timestamp +
-                "," + longitude +
-                "," + latitude +
+                "," + mercator_x +
+                "," + mercator_y +
                 "," + MMSI +
                 "," + name +
                 "," + type +
+                "," + latitude +
+                "," + longitude +
                 '}';
     }
 }

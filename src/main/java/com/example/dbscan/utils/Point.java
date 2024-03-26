@@ -12,6 +12,8 @@ public class Point {
     public int pointIndex;
     public double longitude;
     public double latitude;
+    public double mercator_x;
+    public double mercator_y;
     public double x;
     public double y;
     //public String partition_id=null;
@@ -22,7 +24,7 @@ public class Point {
     public final static int NOISE = -1;
     public String type;
 
-    public Point(String mmsi, String timestamp, String latitude, String longitude, String sog, String cog, String type) {
+    public Point(String mmsi, String timestamp, String mercator_x, String mercator_y, String sog, String cog, String type, String latitude, String longitude) {
         this.pointIndex = Integer.valueOf(mmsi);
         try {
             this.timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timestamp);
@@ -38,8 +40,10 @@ public class Point {
 //        double[] xy = coordinate.lonlat2xy(Double.valueOf(latitude), Double.valueOf(longitude));
 //        this.x = xy[0];
 //        this.y = xy[1];
-        this.x = Double.valueOf(longitude);
-        this.y = Double.valueOf(latitude);
+        this.mercator_x = Double.valueOf(mercator_x);
+        this.mercator_y = Double.valueOf(mercator_y);
+        this.x = Double.valueOf(mercator_x);
+        this.y = Double.valueOf(mercator_y);
         this.position[0] = x;
         this.position[1] = y;
         this.visited = false;

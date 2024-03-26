@@ -22,7 +22,7 @@ class Main {
         // 调用增量DBscanlist函数获取处理后的列表
         List<SinglePoint> resultList = dbscan.DBscanlist();
         //先保存第一步的结果
-        String outputFilePath1 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\xyhhutm_ec_ec_6_new20180401_0407_cleanmin10env10000.csv";
+        String outputFilePath1 = "D:\\1HZA\\YJSBYSJ\\Code\\Algorithm\\IncreDbscantwicejdbcpro\\result\\同时输出JWD和MKTutm_ec_ec_8_new20180401_0407_cleanmin10env10000.csv";
 //        saveToCSV(resultList, outputFilePath);
         saveToCSV1(resultList, outputFilePath1);
         System.out.println("第一步结果保存成功");
@@ -62,7 +62,7 @@ class Main {
     private static void saveToCSV1(List<SinglePoint> resultList, String filePath) {
         try (CSVWriter writer = new CSVWriter(new FileWriter(filePath))) {
             // 写入CSV文件头部
-            writer.writeNext(new String[]{"COG", "SOG", "Timestamp", "Longitude", "Latitude", "MMSI", "RouteName", "Type"});
+            writer.writeNext(new String[]{"COG", "SOG", "Timestamp", "mercator_x", "mercator_y", "MMSI", "RouteName", "Type","Latitude", "Longitude"});
 
             // 写入数据
             for (SinglePoint point : resultList) {
@@ -70,11 +70,13 @@ class Main {
                         String.valueOf(point.getCog()),
                         String.valueOf(point.getSog()),
                         String.valueOf(point.getTimestamp()),
-                        String.valueOf(point.getLongitude()),
-                        String.valueOf(point.getLatitude()),
+                        String.valueOf(point.getMercator_x()),
+                        String.valueOf(point.getMercator_y()),
                         String.valueOf(point.getMMSI()),
                         String.valueOf(point.getName()),
-                        String.valueOf(point.getType())
+                        String.valueOf(point.getType()),
+                        String.valueOf(point.getLatitude()),
+                        String.valueOf(point.getLongitude()),
                 };
                 writer.writeNext(data);
             }

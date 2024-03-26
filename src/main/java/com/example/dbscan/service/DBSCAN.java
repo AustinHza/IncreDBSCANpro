@@ -83,7 +83,7 @@ public class DBSCAN {
                 }
 
                 System.out.println("查询结果共有 " + rowCount + " 行。");
-                printWayPoints();
+//                printWayPoints();//打印三类关键点
             }
         } catch (SQLException e) {
             e.printStackTrace();

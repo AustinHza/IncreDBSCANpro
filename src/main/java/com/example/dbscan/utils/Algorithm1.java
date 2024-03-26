@@ -80,7 +80,7 @@ public class Algorithm1 {
                         vessel.status = "lost";
 
                         //调用DBCAN参数计算程序
-                        parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
+                        paramCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), EXs, vessels, routes);
                         EXScal++;
@@ -117,7 +117,7 @@ public class Algorithm1 {
             vessel.lastupdate = point.timestamp;
             vessels.add(vessel);
             //调用DBCAN参数计算程序
-            parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
+            paramCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
             IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
             incCluster.incrementalUpdate(vessels.get(vessels.size() - 1).tracks.get(vessels.get(vessels.size() - 1).tracks.size() - 1), ENs, vessels, routes);
             ENScal++;
@@ -147,7 +147,7 @@ public class Algorithm1 {
                         vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1).classed = true;
                         vessels.get(i).status = "stationary";
                         //调用DBCAN参数计算程序
-                        parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
+                        paramCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), POs, vessels, routes);
                         POScal++;
@@ -166,7 +166,7 @@ public class Algorithm1 {
                     {
                         vessels.get(i).status="sailing";
                         //调用DBCAN参数计算程序
-                        parammeterCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
+                        paramCalculation(mmsi, timestamp, mercator_x, mercator_y, sog, cog, type);
                         IncDBSCANCluster incCluster = new IncDBSCANCluster(radius, minpts);
                         incCluster.incrementalUpdate(vessels.get(i).tracks.get(vessels.get(i).tracks.size() - 1), ENs, vessels, routes);
                         ENScal++;
@@ -221,7 +221,7 @@ public class Algorithm1 {
 
     }
 
-    private void parammeterCalculation(String MMSI, String timestamp, String mercator_x, String mercator_y, String sog, String cog, String type) {
+    private void paramCalculation(String MMSI, String timestamp, String mercator_x, String mercator_y, String sog, String cog, String type) {
         // 将传入的参数保存在数组中并添加到PointLog中
         String[] params = new String[]{MMSI, timestamp, mercator_x, mercator_y, sog, cog, type};
         PointLog.add(params);
@@ -255,40 +255,40 @@ public class Algorithm1 {
 
         // 对距离进行排序
         Collections.sort(distances);
-//        //***********************************************按距离增长差值选择radius********************************
-        double radius = 10000; // 默认距离
+//        //***********************************************按距离增长差值最大值选择radius********************************
+//        double radius = 10000; // 默认距离
 
         // 只有当列表中有足够的数据时，才进行斜率计算
-        if (distances.size() > 1) {
-            // 计算每两个连续距离之间的斜率
-            List<Double> slopes = new ArrayList<>();
-            for (int i = 1; i < distances.size(); i++) {
-                slopes.add(distances.get(i) - distances.get(i - 1));
-            }
-
-            // 找到斜率最大的索引
-            double maxSlope = -1;
-            int maxSlopeIndex = -1;
-            for (int i = 0; i < slopes.size(); i++) {
-                if (slopes.get(i) > maxSlope) {
-                    maxSlope = slopes.get(i);
-                    maxSlopeIndex = i;
-                }
-            }
-
-            // 拐点在原始距离列表中的位置是 maxSlopeIndex + 1
-            int turningPointIndex = maxSlopeIndex + 1;
-
-            // 检查拐点索引是否在距离列表范围内
-            if (turningPointIndex < distances.size()) {
-                // 获取拐点对应的距离值作为radius
-                radius = distances.get(turningPointIndex);
-            }
-        }
-//        //***********************************************按距离增长差值选择radius********************************
-
-        //***********************************************按距离增长率选择radius********************************
+//        if (distances.size() > 1) {
+//            // 计算每两个连续距离之间的斜率
+//            List<Double> slopes = new ArrayList<>();
+//            for (int i = 1; i < distances.size(); i++) {
+//                slopes.add(distances.get(i) - distances.get(i - 1));
+//            }
 //
+//            // 找到斜率最大的索引
+//            double maxSlope = -1;
+//            int maxSlopeIndex = -1;
+//            for (int i = 0; i < slopes.size(); i++) {
+//                if (slopes.get(i) > maxSlope) {
+//                    maxSlope = slopes.get(i);
+//                    maxSlopeIndex = i;
+//                }
+//            }
+//
+//            // 拐点在原始距离列表中的位置是 maxSlopeIndex + 1
+//            int turningPointIndex = maxSlopeIndex + 1;
+//
+//            // 检查拐点索引是否在距离列表范围内
+//            if (turningPointIndex < distances.size()) {
+//                // 获取拐点对应的距离值作为radius
+//                radius = distances.get(turningPointIndex);
+//            }
+//        }
+//        //***********************************************按距离增长差值最大值选择radius********************************
+
+        //***********************************************按距离增长率最大值选择radius********************************
+
 //        // 计算每两个连续距离之间的增长率
 //        List<Double> growthRates = new ArrayList<>();
 //        for (int i = 1; i < distances.size(); i++) {
@@ -300,16 +300,12 @@ public class Algorithm1 {
 //                growthRates.add(growthRate);
 //            }
 //        }
-//
-//        // 找到增长率最大的突变点
+//        // 直接找到增长率最大值对应的索引
 //        int maxGrowthRateIndex = 0;
-//        double maxGrowthRateChange = 0;
-//        for (int i = 1; i < growthRates.size(); i++) {
-//            double previousGrowthRate = growthRates.get(i - 1);
-//            double currentGrowthRate = growthRates.get(i);
-//            double growthRateChange = Math.abs(currentGrowthRate - previousGrowthRate);
-//            if (growthRateChange > maxGrowthRateChange) {
-//                maxGrowthRateChange = growthRateChange;
+//        double maxGrowthRate = Double.MIN_VALUE;
+//        for (int i = 0; i < growthRates.size(); i++) {
+//            if (growthRates.get(i) > maxGrowthRate) {
+//                maxGrowthRate = growthRates.get(i);
 //                maxGrowthRateIndex = i;
 //            }
 //        }
@@ -320,14 +316,80 @@ public class Algorithm1 {
 //        if (radius == 0) {
 //            radius = 10000;
 //        }
-        //***********************************************按距离增长率选择radius********************************
+        //***********************************************按距离增长率最大值选择radius********************************
+
+        //***********************************************按距离增长率的增长率最大值选择radius********************************
+
+        // 计算每两个连续距离之间的增长率
+        List<Double> growthRates = new ArrayList<>();
+        for (int i = 1; i < distances.size(); i++) {
+            double previousDistance = distances.get(i - 1);
+            double currentDistance = distances.get(i);
+            // 防止除以零
+            if (previousDistance != 0) {
+                double growthRate = (currentDistance - previousDistance) / previousDistance;
+                growthRates.add(growthRate);
+            }
+        }
+
+        // 找到增长率最大的突变点
+        int maxGrowthRateIndex = 0;
+        double maxGrowthRateChange = 0;
+        for (int i = 1; i < growthRates.size(); i++) {
+            double previousGrowthRate = growthRates.get(i - 1);
+            double currentGrowthRate = growthRates.get(i);
+            double growthRateChange = Math.abs(currentGrowthRate - previousGrowthRate);
+            if (growthRateChange > maxGrowthRateChange) {
+                maxGrowthRateChange = growthRateChange;
+                maxGrowthRateIndex = i;
+            }
+        }
+
+        // 使用突变点之后的第一个距离作为radius
+        double radius = distances.isEmpty() ? 0 : distances.get(Math.min(maxGrowthRateIndex + 1, distances.size() - 1));
+        // 如果radius为0，使用默认值10000
+        if (radius == 0) {
+            radius = 10000;
+        }
+        //*********************************************按距离增长率的增长率最大值选择radius**********************************
         // 更新DBSCAN参数
         this.radius = radius ;
+
+        //*********************************************计算minpts**********************************
+        // 创建一个预筛选的矩形包围盒
+        Envelope searchEnv2 = new Envelope(new Coordinate(mercatorx, mercatory));
+        searchEnv2.expandBy(this.radius);
+        // 预筛选点集
+        List<?> queryResults2 = quadTree.query(searchEnv2);
+
+
+
+        List<Integer> pointsCount= new ArrayList<>();
+        for (Object item : queryResults2) {
+            org.locationtech.jts.geom.Point candidate = (org.locationtech.jts.geom.Point) item;
+            Envelope candidateEnv = new Envelope(candidate.getCoordinate());
+            candidateEnv.expandBy(this.radius);
+            List<?> candidateQueryResults = quadTree.query(candidateEnv);
+            pointsCount.add(candidateQueryResults.size());
+        }
+        // 计算点个数平均值
+        double averagePointsCount = pointsCount.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+
+        // 使用点个数的平均值作为minpts
+        int minpts = (int) Math.ceil(averagePointsCount);
+        if (minpts<4){
+            minpts = 4;
+        }
+
         this.minpts = minpts ;
+        //*********************************************计算minpts**********************************
+
         IncDBcalculate++;
         System.out.println("第"+IncDBcalculate+"次调用IncDBSCAN，计算得到的参数radius = " + this.radius+ ",minpts = " + this.minpts);
 
     }
+
+
 
     private double calculateHaversine (double lat1, double lon1, double lat2, double lon2) {
         final int R = 6371; // 地球半径，单位是千米
